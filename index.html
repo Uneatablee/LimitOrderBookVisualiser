@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOB Visualizer - Infografika Projektowa</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-2.32.0.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #0f172a; color: #f8fafc; }
+        .chart-container { position: relative; width: 100%; max-width: 900px; margin-left: auto; margin-right: auto; height: 350px; max-height: 450px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        .card { background-color: #1e293b; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5); padding: 1.5rem; }
+        .tech-box { display: flex; align-items: center; justify-content: center; padding: 1rem; border-radius: 0.5rem; font-weight: bold; text-align: center; }
+        .arrow { font-size: 2rem; color: #64748b; margin: 0 0.5rem; }
+    </style>
+</head>
+<body class="antialiased pb-20">
+
+    <header class="bg-blue-600 shadow-lg shadow-blue-900/50 py-12 px-6 text-center border-b border-blue-500">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">LOB Visualizer</h1>
+        <p class="text-xl md:text-2xl font-light max-w-3xl mx-auto text-blue-100">
+            Czasowy symulator i wizualizator arkusza zleceń w czasie rzeczywistym.
+        </p>
+        <div class="mt-6 inline-block bg-blue-900 text-blue-200 px-4 py-1 rounded-full text-sm font-semibold tracking-wide">
+            Indywidualny Projekt Programistyczny <br/>
+            C++, Qt, ABIDES
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 space-y-16">
+
+        <!-- Kontekst i Cel Projektu -->
+        <section class="card border-t-4 border-emerald-500">
+            <h2 class="text-3xl font-bold mb-4 text-emerald-400">Kontekst i Cel Projektu</h2>
+            <p class="text-lg text-slate-300 leading-relaxed mb-6">
+                Projekt ten jest bezpośrednim wstępem do pracy inżynierskiej. Jego głównym celem jest stworzenie wydajnej aplikacji desktopowej, która wizualizuje zmiany ofert kupna (Bid) i sprzedaży (Ask). Stanowi on poligon doświadczalny dla struktur danych i architektury wielowątkowej, która docelowo jako praca inżynierska zostanie rozwinięta w wysokowydajny silnik backtestingowy oparty na technikach <span class="text-emerald-400 font-semibold">lock-free</span>.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">&#128200;</div>
+                    <h3 class="font-bold text-white mb-2">Głębia Rynku (DOM)</h3>
+                    <p class="text-sm text-slate-400">Dynamiczne wyświetlanie poziomów cenowych oraz wolumenów.</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">&#9889;</div>
+                    <h3 class="font-bold text-white mb-2">Czas Rzeczywisty</h3>
+                    <p class="text-sm text-slate-400">Błyskawiczne procesowanie zdarzeń rynkowych (Low Latency). Aktualizacja przyrostowa L2/L3.</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">&#128013;</div>
+                    <h3 class="font-bold text-white mb-2">Integracja ABIDES</h3>
+                    <p class="text-sm text-slate-400">Zasilanie arkusza realistycznymi danymi symulacyjnymi z języka Python.</p>
+                </div>
+                <div class="bg-slate-800 p-4 rounded-lg border border-slate-700 flex flex-col items-center text-center">
+                    <div class="text-4xl mb-3">&#129461;</div>
+                    <h3 class="font-bold text-white mb-2">Wielowątkowość</h3>
+                    <p class="text-sm text-slate-400">Separacja wątku UI od silnika przetwarzającego logikę.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architektura -->
+        <section>
+            <h2 class="text-3xl font-bold mb-6 text-violet-400 px-2">Architektura i Przepływ Danych</h2>
+            <ul class="text-slate-300 mb-8 px-4 max-w-4xl list-disc space-y-2">
+                <li>Projekt składa się z <strong>Limit Order Booka</strong> oraz <strong>Visualizatora</strong>.</li>
+                <li>Opiera się na wydajnej komunikacji międzyprocesowej (<strong>IPC</strong>).</li>
+                <li>Środowisko symulacyjne generuje zlecenia, które są błyskawicznie przesyłane do silnika głównego, gdzie następuje aktualizacja struktur danych, a następnie odświeżenie interfejsu użytkownika.</li>
+                <li>System docelowo będzie przetwarzał dziesiątki/setki tysięcy zmian na sekundę, więc używany będzie <strong>Throttling</strong> do snapshotów, aby nie przeciążyć UI.</li>
+            </ul>
+
+            <div class="card bg-slate-800 overflow-x-auto border border-violet-900/50">
+                <div class="flex flex-col md:flex-row items-center justify-between min-w-[700px] p-4">
+                    <div class="flex flex-col items-center w-48">
+                        <div class="tech-box bg-amber-600 text-white w-full h-24 shadow-lg shadow-amber-900/50 flex-col">
+                            Python 3<br><span class="text-sm font-normal mt-1">Środowisko ABIDES</span>
+                        </div>
+                        <span class="text-xs text-slate-400 mt-2 text-center">Generator zdarzeń<br>(Mock-feed / Symulacja)</span>
+                    </div>
+
+                    <div class="arrow">&#10230;</div>
+
+                    <div class="flex flex-col items-center w-40">
+                        <div class="tech-box bg-violet-600 text-white w-full h-20 shadow-lg shadow-violet-900/50 rounded-full">
+                            ZeroMQ
+                        </div>
+                        <span class="text-xs text-slate-400 mt-2 text-center">Protokół IPC<br>(Gniazda, Strumienie)</span>
+                    </div>
+
+                    <div class="arrow">&#10230;</div>
+
+                    <div class="flex flex-col items-center w-48">
+                        <div class="tech-box bg-blue-600 text-white w-full h-24 shadow-lg shadow-blue-900/50 flex-col">
+                            C++17 / 20<br><span class="text-sm font-normal mt-1">Silnik LOB</span>
+                        </div>
+                        <span class="text-xs text-slate-400 mt-2 text-center">Struktury danych<br>Zarządzanie pamięcią</span>
+                    </div>
+
+                    <div class="arrow">&#10230;</div>
+
+                    <div class="flex flex-col items-center w-48">
+                        <div class="tech-box bg-emerald-600 text-white w-full h-24 shadow-lg shadow-emerald-900/50 flex-col">
+                            Qt 6 GUI<br><span class="text-sm font-normal mt-1">Wątek Renderujący</span>
+                        </div>
+                        <span class="text-xs text-slate-400 mt-2 text-center">Interfejs Okienkowy<br>Renderowanie na żywo</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Wykresy (Doughnut i Plotly) -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="card border-l-4 border-blue-500 flex flex-col">
+                <h2 class="text-2xl font-bold mb-4 text-blue-400">Podział Technologii</h2>
+                <p class="text-slate-300 mb-6 flex-grow">
+                    Główny nakład pracy w projekcie skupia się na implementacji wydajnego silnika Limit Order Book w C++ oraz jego wizualizacji w Qt 6. Środowisko ABIDES stanowi jedynie gotową paczkę do generowania zdarzeń, z którą system integruje się poprzez autorską implementację połączenia opartego na ZeroMQ.
+                </p>
+                <div class="chart-container w-full">
+                    <canvas id="techStackChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card border-l-4 border-amber-500 flex flex-col">
+                <h2 class="text-2xl font-bold mb-4 text-amber-400">Wizualizacja Głębi Rynku (DOM)</h2>
+                <p class="text-slate-300 mb-6 flex-grow">
+                    Docelowy interfejs zilustruje przede wszystkim skumulowany wolumen dla zleceń kupna (Bid - zielone) i sprzedaży (Ask - czerwone) oraz Historię LOB jako Heatmapę. Poniższe symulacje ukazują wykorzystanie technologii WebGL do płynnego renderowania.
+                </p>
+                <div class="flex flex-col space-y-6">
+                    <div class="chart-container w-full !h-[250px] !max-h-[250px]" id="domPlotlyContainer"></div>
+                    <div class="chart-container w-full !h-[250px] !max-h-[250px]" id="heatmapPlotlyContainer"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Harmonogram -->
+        <section class="card border-t-4 border-red-500">
+            <h2 class="text-3xl font-bold mb-4 text-red-400">Harmonogram Realizacji Projektu</h2>
+            <p class="text-lg text-slate-300 mb-8 max-w-4xl">
+                Prace zostały podzielone na etapy raportowe, które gwarantują systematyczny rozwój – od środowiska i struktur danych, poprzez logikę i interfejs, aż po integrację IPC i ostateczną optymalizację pod kątem wydajności (TPS).
+            </p>
+            <div class="chart-container w-full h-[400px]">
+                <canvas id="roadmapChart"></canvas>
+            </div>
+
+            <div class="mt-8 bg-slate-800 p-6 rounded-lg border border-slate-700">
+                <ul class="list-disc list-outside ml-4 space-y-4 text-sm text-slate-300">
+                    <li>
+                        <strong class="text-slate-200">05.03 (Propozycje projektu):</strong> Zdefiniowanie tematu i technologii.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">2%</span> <span class="opacity-50 ml-2">(0 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">12.03 (Prezentacja wstępna):</strong> Akceptacja struktury projektu, omówienie założeń architektonicznych.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">3%</span> <span class="opacity-50 ml-2">(0 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">27.03 (Raport I):</strong> Konfiguracja CMake, środowiska Qt, instalacja ZeroMQ. Zaprojektowanie i implementacja podstawowych struktur danych LOB (mapy, kolejki) oraz statyczne UI.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">15%</span> <span class="opacity-50 ml-2">(10 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">16.04 (Raport II):</strong> Implementacja logiki biznesowej C++ (metody modyfikacji LOB), napisanie wewnętrznego mock-feed'a do testowania, ożywienie interfejsu Qt (sygnały i sloty).
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">25%</span> <span class="opacity-50 ml-2">(10 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">07.05 (Raport III):</strong> Wdrożenie modułu komunikacji IPC (ZeroMQ), stworzenie skryptu konektora w Pythonie dla ABIDES, logowanie odbieranych pakietów.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">15%</span> <span class="opacity-50 ml-2">(10 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">21.05 (Raport IV / Prototyp):</strong> Pełna integracja E2E (Python -> C++ -> Qt), obsługa współbieżności i bezpieczeństwa wątkowego.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">20%</span> <span class="opacity-50 ml-2">(10 pkt)</span></div>
+                    </li>
+                    <li>
+                        <strong class="text-slate-200">11.06 (Projekt końcowy):</strong> Optymalizacja wydajności (alokacja pamięci, Throttling), dodanie metryk TPS do UI, wygładzenie interfejsu, dokumentacja.
+                        <div class="text-xs text-slate-500 mt-0.5">Szacowany nakład pracy: <span class="text-red-400 font-bold">20%</span> <span class="opacity-50 ml-2">(50 pkt)</span></div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Ryzyko i Plan Awaryjny -->
+        <section class="card border-t-4 border-orange-500">
+            <h2 class="text-3xl font-bold mb-4 text-orange-400">Zarządzanie Ryzykiem i Plan Awaryjny (MVP)</h2>
+            <p class="text-lg text-slate-300 leading-relaxed mb-6">
+                W przypadku napotkania istotnych trudności technicznych (związanych np. z integracją wielowątkowości lub wąskim gardłem wydajnościowym) wprowadzony zostanie plan awaryjny redukujący projekt do wersji <strong>Minimum Viable Product (MVP)</strong>. Pozwoli to na dostarczenie działającej, stabilnej aplikacji na termin zaliczenia.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                <!-- Ryzyko 1 -->
+                <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 flex flex-col">
+                    <div class="flex items-center mb-3">
+                        <span class="text-3xl mr-3">&#9888;&#65039;</span>
+                        <h3 class="font-bold text-slate-100 text-lg">Wąskie gardło wydajności (Throttling / TPS)</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-4 flex-grow">
+                        Zbyt duża ilość zdarzeń L2/L3 z ABIDES może "zadławić" wątek renderujący Qt 6, powodując zawieszanie się interfejsu wizualizatora.
+                    </p>
+                    <div class="bg-slate-900 p-3 rounded text-sm">
+                        <strong class="text-orange-400 block mb-1">Redukcja (Cięcie):</strong>
+                        <ul class="list-disc list-inside text-slate-300">
+                            <li>Drastyczne zwiększenie okna Throttlingu (np. odświeżanie UI tylko 2 razy na sekundę).</li>
+                            <li>Ograniczenie wizualizacji DOM tylko do <strong>Top 10-20</strong> najlepszych poziomów cenowych, zamiast renderowania pełnej głębi arkusza.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Ryzyko 2 -->
+                <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 flex flex-col">
+                    <div class="flex items-center mb-3">
+                        <span class="text-3xl mr-3">&#128187;</span>
+                        <h3 class="font-bold text-slate-100 text-lg">Złożoność integracji Heatmapy (Bookmap)</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-4 flex-grow">
+                        Renderowanie płynnej historii arkusza w czasie rzeczywistym jest wysoce pamięciożerne i może znacząco opóźnić realizację głównych założeń silnika LOB.
+                    </p>
+                    <div class="bg-slate-900 p-3 rounded text-sm">
+                        <strong class="text-orange-400 block mb-1">Redukcja (Cięcie):</strong>
+                        <ul class="list-disc list-inside text-slate-300">
+                            <li>Całkowite usunięcie wizualizacji typu Heatmap z interfejsu docelowego.</li>
+                            <li>Skupienie się wyłącznie na klasycznym wykresie schodkowym (Depth of Market) jako podstawowym i jedynym narzędziu wizualizacyjnym.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Ryzyko 3 -->
+                <div class="bg-slate-800 p-5 rounded-lg border border-slate-700 flex flex-col">
+                    <div class="flex items-center mb-3">
+                        <span class="text-3xl mr-3">&#129461;</span>
+                        <h3 class="font-bold text-slate-100 text-lg">Wyścigi Danych i Synchronizacja</h3>
+                    </div>
+                    <p class="text-sm text-slate-400 mb-4 flex-grow">
+                        Projekt stanowi <i>wstęp</i> do inżynierki opartej na technikach lock-free. Wątek UI musi czytać stan LOB ze współdzielonej pamięci w trakcie, gdy silnik go modyfikuje.
+                    </p>
+                    <div class="bg-slate-900 p-3 rounded text-sm">
+                        <strong class="text-orange-400 block mb-1">Redukcja (Cięcie):</strong>
+                        <ul class="list-disc list-inside text-slate-300">
+                            <li>Odrzucenie przedwczesnej implementacji struktur lock-free na rzecz standardowych blokad (<code>std::mutex</code> / <code>std::shared_mutex</code>).</li>
+                            <li>Zaakceptowanie niższego docelowego wskaźnika TPS kosztem 100% stabilności i wyeliminowania ryzyka tzw. Data Races na styku C++ <-> Qt.</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center py-8 text-slate-500 text-sm mt-12 border-t border-slate-800">
+        &copy; 2026 LOB Visualizer Project. Architektura i projekt interfejsu.
+    </footer>
+
+    <script>
+        function wrapLabelText(label) {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            let lines = [];
+            let currentLine = '';
+            words.forEach(word => {
+                if ((currentLine + word).length > 16) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            if (currentLine) lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const commonTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
+                    }
+                }
+            }
+        };
+
+        Chart.defaults.color = '#cbd5e1';
+        Chart.defaults.font.family = "'Segoe UI', Roboto, sans-serif";
+
+        const ctxTech = document.getElementById('techStackChart').getContext('2d');
+        const rawTechLabels = ['Silnik LOB (C++)', 'Wizualizacja GUI (Qt 6)', 'Integracja IPC (ZeroMQ)', 'Konektor ABIDES'];
+        const processedTechLabels = rawTechLabels.map(wrapLabelText);
+
+        new Chart(ctxTech, {
+            type: 'doughnut',
+            data: {
+                labels: processedTechLabels,
+                datasets: [{
+                    data: [50, 30, 15, 5],
+                    backgroundColor: ['#3b82f6', '#10b981', '#8b5cf6','#f59e0b'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { color: '#f8fafc' } },
+                    tooltip: commonTooltipConfig
+                },
+                cutout: '70%'
+            }
+        });
+
+        const ctxRoadmap = document.getElementById('roadmapChart').getContext('2d');
+        const rawMilestones = [
+            'Propozycje projektu',
+            'Prezentacja wstępna',
+            'Raport I: Środowisko i Struktury',
+            'Raport II: Logika i UI',
+            'Raport III: IPC i Python',
+            'Raport IV: Prototyp E2E',
+            'Projekt końcowy i optymalizacja'
+        ];
+        const processedMilestones = rawMilestones.map(wrapLabelText);
+
+        const workEstimates = [2, 3, 15, 25, 15, 20, 20];
+        const pointValues = [0, 0, 10, 10, 10, 10, 50];
+
+        new Chart(ctxRoadmap, {
+            type: 'bar',
+            data: {
+                labels: ['05.03', '12.03', '27.03', '16.04', '07.05', '21.05', '11.06'],
+                datasets: [{
+                    label: 'Szacowany nakład pracy (%)',
+                    data: workEstimates,
+                    backgroundColor: '#ef4444',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { display: false, color: '#334155' },
+                        ticks: { font: { weight: 'bold' } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 30,
+                        grid: { color: '#334155' },
+                        title: { display: true, text: 'Nakład pracy (%)', color: '#94a3b8' }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return processedMilestones[tooltipItems[0].dataIndex].join ? processedMilestones[tooltipItems[0].dataIndex].join(' ') : processedMilestones[tooltipItems[0].dataIndex];
+                            },
+                            label: function(context) {
+                                return 'Nakład pracy: ' + context.raw + '%';
+                            },
+                            afterLabel: function(context) {
+                                return 'Punkty za etap: ' + pointValues[context.dataIndex] + ' pkt';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const domPricesBids = [99.50, 99.60, 99.70, 99.80, 99.90, 100.00];
+        const domVolsBids = [500, 420, 310, 180, 90, 20];
+
+        const domPricesAsks = [100.10, 100.20, 100.30, 100.40, 100.50, 100.60];
+        const domVolsAsks = [30, 120, 250, 380, 460, 550];
+
+        const traceBids = {
+            x: domPricesBids,
+            y: domVolsBids,
+            fill: 'tozeroy',
+            type: 'scattergl',
+            mode: 'lines',
+            line: { shape: 'hv', color: '#10b981', width: 2 },
+            fillcolor: 'rgba(16, 185, 129, 0.2)',
+            name: 'Bid (Kupno)'
+        };
+
+        const traceAsks = {
+            x: domPricesAsks,
+            y: domVolsAsks,
+            fill: 'tozeroy',
+            type: 'scattergl',
+            mode: 'lines',
+            line: { shape: 'vh', color: '#ef4444', width: 2 },
+            fillcolor: 'rgba(239, 68, 68, 0.2)',
+            name: 'Ask (Sprzedaż)'
+        };
+
+        const layoutDom = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#cbd5e1', family: "'Segoe UI', Roboto, sans-serif" },
+            margin: { t: 10, b: 40, l: 50, r: 20 },
+            xaxis: { title: 'Cena', gridcolor: '#334155', zerolinecolor: '#334155' },
+            yaxis: { title: 'Wolumen', gridcolor: '#334155', zerolinecolor: '#334155' },
+            legend: { orientation: 'h', y: 1.15, x: 0.5, xanchor: 'center' },
+            hovermode: 'x unified'
+        };
+
+        const configDom = {
+            responsive: true,
+            displayModeBar: false,
+            staticPlot: false
+        };
+
+        Plotly.newPlot('domPlotlyContainer', [traceBids, traceAsks], layoutDom, configDom);
+
+        // --- HEATMAP (Bookmap) DATA & CONFIG ---
+        const timeSteps = ['10:00:00', '10:00:01', '10:00:02', '10:00:03', '10:00:04', '10:00:05', '10:00:06', '10:00:07', '10:00:08', '10:00:09'];
+        const priceLevels = [99.50, 99.60, 99.70, 99.80, 99.90, 100.00, 100.10, 100.20, 100.30, 100.40, 100.50, 100.60];
+
+        // Symulacja skoków płynności (jasne punkty = duży wolumen)
+        const zValues = [
+            [500, 480, 520, 500, 490, 510, 500, 550, 600, 580], // 99.50
+            [420, 400, 430, 410, 420, 400, 410, 420, 450, 440],
+            [310, 300, 320, 310, 300, 310, 300, 290, 300, 310],
+            [180, 190, 180, 170, 180, 190, 200, 180, 170, 160],
+            [90,  80,  90,  100, 90,  80,  70,  80,  90,  100],
+            [20,  10,  20,  30,  20,  10,  0,   10,  20,  10],  // 100.00 (okolice Spreadu)
+            [30,  40,  30,  20,  30,  40,  50,  40,  30,  20],
+            [120, 130, 120, 110, 120, 130, 140, 130, 120, 110],
+            [250, 260, 250, 240, 250, 260, 270, 260, 250, 240],
+            [380, 370, 380, 390, 380, 370, 360, 370, 380, 390],
+            [460, 450, 460, 470, 460, 450, 440, 450, 460, 470],
+            [550, 560, 550, 540, 550, 560, 570, 580, 590, 600]  // 100.60
+        ];
+
+        const traceHeatmap = {
+            z: zValues,
+            x: timeSteps,
+            y: priceLevels,
+            type: 'heatmap',
+            colorscale: [
+                ['0.0', '#0f172a'], // Tło (brak zleceń)
+                ['0.2', '#1e3a8a'], // Niski wolumen (niebieski)
+                ['0.5', '#10b981'], // Średni wolumen (zielony)
+                ['0.8', '#f59e0b'], // Wysoki wolumen (pomarańczowy)
+                ['1.0', '#ef4444']  // Bardzo wysoki wolumen (czerwony)
+            ],
+            showscale: true,
+            colorbar: {
+                title: 'Wol.',
+                titleside: 'top',
+                tickfont: {color: '#cbd5e1'},
+                thickness: 10
+            }
+        };
+
+        const layoutHeatmap = {
+            title: { text: 'Historia Arkusza (Heatmap)', font: { color: '#f8fafc', size: 14 } },
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#cbd5e1', family: "'Segoe UI', Roboto, sans-serif" },
+            margin: { t: 30, b: 30, l: 50, r: 0 },
+            xaxis: { gridcolor: '#334155', zerolinecolor: '#334155' },
+            yaxis: { gridcolor: '#334155', zerolinecolor: '#334155' }
+        };
+
+        Plotly.newPlot('heatmapPlotlyContainer', [traceHeatmap], layoutHeatmap, {responsive: true, displayModeBar: false});
+    </script>
+</body>
+</html>
