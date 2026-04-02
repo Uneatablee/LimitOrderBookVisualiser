@@ -1,0 +1,94 @@
+#C++ gitignore
+#===========================
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#cmake gitignore
+#=======================
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+
+#vscode-counter
+out
+node_modules
+.vscode-test/
+.VSCodeCounter/
+*.vsix
+yarn.lock
+
+#Conan
+/conan/
+conanbuildinfo.args
+conaninfo.txt
+conanfile.txt.user
+graph_info.json
+
+#Qt
+*.user
+*.autosave
+/moc_*.cpp
+/ui_*.h
+/qrc_*.cpp
+/.vscode/
+/.idea/
+
+#python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+/data/*.csv
+/data/*.parquet
+/logs/
+
+#system
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+
+#custom ignores
+#=================================
+build
+.vscode

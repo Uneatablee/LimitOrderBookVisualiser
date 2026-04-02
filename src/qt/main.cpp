@@ -1,0 +1,5 @@
+#include "QWidget"
+
+int main(){
+
+}

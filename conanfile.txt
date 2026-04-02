@@ -1,0 +1,10 @@
+[requires]
+zeromq/4.3.5
+qt/6.7.1
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
