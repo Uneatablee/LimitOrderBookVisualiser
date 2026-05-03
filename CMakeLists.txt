@@ -29,3 +29,5 @@ add_subdirectory(src/console)
 add_subdirectory(src/qt)
 add_subdirectory(tests)
 
+enable_testing()
+

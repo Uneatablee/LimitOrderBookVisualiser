@@ -1,6 +1,7 @@
 [requires]
 zeromq/4.3.5
 qt/6.7.1
+gtest/1.17.0
 
 [generators]
 CMakeDeps
