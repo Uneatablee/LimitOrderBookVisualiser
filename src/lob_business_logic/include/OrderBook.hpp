@@ -1,3 +1,4 @@
+#pragma once
 #include "Order.hpp"
 #include "PriceLevel.hpp"
 #include <vector>
@@ -16,7 +17,7 @@ namespace lobv::business_logic{
         bool AddOrder(OrderId id, OrderType type, Side side, Price price, Quantity quantity);
         bool CancelOrder(OrderId order_id);
         PriceLevel* GetOrCreatePriceLevel(Side side, Price price);
-        //Quantity GetVolumeAtPrice();
+        Quantity GetVolumeAtPrice(Side side, Price price);
 
     private:
 

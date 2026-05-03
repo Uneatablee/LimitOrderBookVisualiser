@@ -1,37 +1,29 @@
 #include "../include/OrderBook.hpp"
+#include <iostream>
 
 namespace lobv::business_logic{
 
     PriceLevel* OrderBook::GetOrCreatePriceLevel(Side side, Price price){
 
         if(side == Side::BuySide){
-            if(_bids.empty()){
-                auto new_level =  new PriceLevel{price, 0};
-                _bids[price] = new_level;
-                return new_level;
-            }
-
             auto level = _bids.find(price);
             if(level != _bids.end()){
                 return _bids[price];
             }
-            else
-            {
-                return new PriceLevel{price, 0};
-            }
-        }
-        else
-        {
-            if(_asks.empty()) return new PriceLevel{price, 0};
 
+            auto new_level =  new PriceLevel{price, 0};
+            _bids[price] = new_level;
+            return new_level;
+        }
+        else{
             auto level = _asks.find(price);
             if(level != _asks.end()){
                 return _asks[price];
             }
-            else
-            {
-                return new PriceLevel{price, 0};
-            }
+
+            auto new_level =  new PriceLevel{price, 0};
+            _asks[price] = new_level;
+            return new_level;
         }
     }
 
@@ -41,9 +33,15 @@ namespace lobv::business_logic{
         Order* new_order = new Order{id, type, side, price, quantity};
 
         new_order -> SetParent(level);
-        new_order -> _previous_order = level -> _orders_queue.back();
 
-        level -> _orders_queue.back() -> _next_order = new_order;
+        if(!level -> _orders_queue.empty()){
+            new_order -> _previous_order = level -> _orders_queue.back();
+        }
+
+        if(!level -> _orders_queue.empty()){
+            level -> _orders_queue.back() -> _next_order = new_order;
+        }
+
         level -> _orders_queue.push_back(new_order);
         level -> _quantity += quantity;
 
@@ -52,21 +50,55 @@ namespace lobv::business_logic{
     }
 
     bool OrderBook::CancelOrder(OrderId order_id){
-        auto order = _order_map[order_id];
+
+        auto it = _order_map.find(order_id);
+        if(it == _order_map.end()){
+            return false;
+        }
+        auto order = it -> second;
+
+        auto previous_ord = order -> _previous_order;
+        auto next_ord = order -> _next_order;
+
+        if(previous_ord != nullptr){
+            previous_ord -> _next_order = next_ord;
+        }
+
+        if(next_ord != nullptr){
+            next_ord -> _previous_order = previous_ord;
+        }
 
         auto price_level = order -> GetParent();
         price_level -> _quantity -= order -> GetQuantity();
 
-        if(order -> _previous_order != nullptr && order -> _next_order != nullptr){
-            order -> _previous_order -> _next_order = order -> _next_order;
-        }
-        else if(order -> _next_order == nullptr){
-            order -> _previous_order -> _next_order = nullptr;
-        }
-        else
-        {
-            order -> _next_order -> _previous_order = nullptr;
+        if(price_level -> _quantity == 0){
+            auto price = order -> GetPrice();
+            if(order -> GetSide() == Side::BuySide){
+                _bids.erase(price);
+            }
+            else{
+                _asks.erase(price);
+            }
         }
 
+        _order_map.erase(it);
+        return true;
+    }
+
+    Quantity OrderBook::GetVolumeAtPrice(Side side, Price price){
+        if(side == Side::BuySide){
+            auto it = _bids.find(price);
+            if(it != _bids.end()){
+                return it -> second -> _quantity;
+            }
+        }
+        else{
+            auto it = _asks.find(price);
+            if(it != _asks.end()){
+                return it -> second -> _quantity;
+            }
+        }
+
+        return 0;
     }
 }

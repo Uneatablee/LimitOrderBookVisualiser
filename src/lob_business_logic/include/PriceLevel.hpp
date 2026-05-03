@@ -1,3 +1,4 @@
+#pragma once
 #include <list>
 
 namespace lobv::business_logic{

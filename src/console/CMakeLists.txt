@@ -1,5 +1,5 @@
 project(console)
 
-add_executable(console main.cpp)
+#add_executable(console main.cpp)
 
-target_link_libraries(console PUBLIC lob_business_logic)
+#target_link_libraries(console PUBLIC lob_business_logic)

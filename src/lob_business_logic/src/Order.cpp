@@ -28,5 +28,6 @@ namespace lobv::business_logic{
 
     bool Order::SetParent(PriceLevel* price_level){
         _parent = price_level;
+        return true;
     }
 }
