@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <memory>
 
 namespace lobv::business_logic{
 
@@ -32,11 +33,11 @@ namespace lobv::business_logic{
         Side GetSide() const;
         Price GetPrice() const;
         Quantity GetQuantity() const;
-        PriceLevel* GetParent() const;
-        bool SetParent(PriceLevel*);
+        std::shared_ptr<PriceLevel> GetParent() const;
+        bool SetParent(std::shared_ptr<PriceLevel>);
 
-        Order* _previous_order = nullptr;
-        Order* _next_order = nullptr;
+        std::weak_ptr<Order> _previous_order{};
+        std::weak_ptr<Order> _next_order{};
 
     private:
 
@@ -45,7 +46,7 @@ namespace lobv::business_logic{
         Side _side;
         Price _price;
         Quantity _quantity;
-        PriceLevel* _parent;
+        std::weak_ptr<PriceLevel> _parent{};
     };
 
 }

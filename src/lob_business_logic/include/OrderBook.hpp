@@ -16,14 +16,14 @@ namespace lobv::business_logic{
         OrderBook(){}
         bool AddOrder(OrderId id, OrderType type, Side side, Price price, Quantity quantity);
         bool CancelOrder(OrderId order_id);
-        PriceLevel* GetOrCreatePriceLevel(Side side, Price price);
+        std::shared_ptr<PriceLevel> GetOrCreatePriceLevel(Side side, Price price);
         Quantity GetVolumeAtPrice(Side side, Price price);
 
     private:
 
-        std::unordered_map<OrderId, Order*> _order_map;
-        std::map<Price, PriceLevel*, std::greater<Price>> _bids;
-        std::map<Price, PriceLevel*, std::less<Price>> _asks;
+        std::unordered_map<OrderId, std::shared_ptr<Order>> _order_map;
+        std::map<Price, std::shared_ptr<PriceLevel>, std::greater<Price>> _bids;
+        std::map<Price, std::shared_ptr<PriceLevel>, std::less<Price>> _asks;
 
     };
 }
