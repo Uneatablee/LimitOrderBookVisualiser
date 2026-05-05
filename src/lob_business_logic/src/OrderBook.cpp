@@ -3,25 +3,25 @@
 
 namespace lobv::business_logic{
 
-    PriceLevel* OrderBook::GetOrCreatePriceLevel(Side side, Price price){
+    std::shared_ptr<PriceLevel> OrderBook::GetOrCreatePriceLevel(Side side, Price price){
 
         if(side == Side::BuySide){
             auto level = _bids.find(price);
             if(level != _bids.end()){
-                return _bids[price];
+                return level -> second;
             }
 
-            auto new_level =  new PriceLevel{price, 0};
+            auto new_level =  std::make_shared<PriceLevel>(price, 0);
             _bids[price] = new_level;
             return new_level;
         }
         else{
             auto level = _asks.find(price);
             if(level != _asks.end()){
-                return _asks[price];
+                return level -> second;
             }
 
-            auto new_level =  new PriceLevel{price, 0};
+            auto new_level =  std::make_shared<PriceLevel>(price, 0);
             _asks[price] = new_level;
             return new_level;
         }
@@ -29,8 +29,8 @@ namespace lobv::business_logic{
 
     bool OrderBook::AddOrder(OrderId id, OrderType type, Side side, Price price, Quantity quantity){
 
-        PriceLevel* level = GetOrCreatePriceLevel(side, price);
-        Order* new_order = new Order{id, type, side, price, quantity};
+        std::shared_ptr<PriceLevel> level = GetOrCreatePriceLevel(side, price);
+        std::shared_ptr<Order> new_order = std::make_shared<Order>(id, type, side, price, quantity);
 
         new_order -> SetParent(level);
 
@@ -39,7 +39,9 @@ namespace lobv::business_logic{
         }
 
         if(!level -> _orders_queue.empty()){
-            level -> _orders_queue.back() -> _next_order = new_order;
+            if (std::shared_ptr<Order> last_order = level->_orders_queue.back().lock()) {
+                last_order -> _next_order = new_order;
+            }
         }
 
         level -> _orders_queue.push_back(new_order);
@@ -57,14 +59,14 @@ namespace lobv::business_logic{
         }
         auto order = it -> second;
 
-        auto previous_ord = order -> _previous_order;
-        auto next_ord = order -> _next_order;
+        std::shared_ptr<Order> previous_ord = order -> _previous_order.lock();
+        std::shared_ptr<Order> next_ord = order -> _next_order.lock();
 
-        if(previous_ord != nullptr){
+        if(previous_ord){
             previous_ord -> _next_order = next_ord;
         }
 
-        if(next_ord != nullptr){
+        if(next_ord){
             next_ord -> _previous_order = previous_ord;
         }
 

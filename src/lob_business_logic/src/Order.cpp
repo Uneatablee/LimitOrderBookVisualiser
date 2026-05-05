@@ -22,11 +22,11 @@ namespace lobv::business_logic{
         return _quantity;
     }
 
-    PriceLevel* Order::GetParent() const {
-        return _parent;
+    std::shared_ptr<PriceLevel> Order::GetParent() const {
+        return _parent.lock();
     }
 
-    bool Order::SetParent(PriceLevel* price_level){
+    bool Order::SetParent(std::shared_ptr<PriceLevel> price_level){
         _parent = price_level;
         return true;
     }
