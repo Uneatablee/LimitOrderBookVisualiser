@@ -3,11 +3,13 @@
 
 #include <QMainWindow>
 
+class OrderBookMainScreen;
+
 class MainWindow : public QMainWindow{
     Q_OBJECT
 
 public:
-    explicit MainWindow();
+    explicit MainWindow(OrderBookMainScreen*);
     ~MainWindow();
 };
 

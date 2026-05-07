@@ -10,11 +10,17 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Charts)
+find_package(di REQUIRED)
 
 qt_standard_project_setup()
 qt_add_executable(lob_visualizer ${PROJECT_SOURCES})
 
 target_link_libraries(lob_visualizer PRIVATE Qt6::Widgets)
+target_link_libraries(lob_visualizer PRIVATE Qt6::Charts)
+target_link_libraries(lob_visualizer PRIVATE di::di)
+target_link_libraries(lob_visualizer PUBLIC lob_business_logic)
+target_link_libraries(lob_visualizer PUBLIC infrastructure)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
