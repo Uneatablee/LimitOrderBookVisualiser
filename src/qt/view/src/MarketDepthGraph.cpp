@@ -6,86 +6,93 @@
 #include "QtCharts/QChartView"
 #include "QtCharts/QChart"
 #include <QStringList>
-// #include "../../viewmodel/ViewModel.hpp"
-// #include "../../Intent/UserIntent.hpp"
-// #include "../../viewstate/ViewState.hpp"
+#include "../../viewmodel/ViewModel.hpp"
+#include "../../Intent/UserIntent.hpp"
+#include "../../viewstate/ViewState.hpp"
 #include "QtCharts/QBarCategoryAxis"
 #include "QtCharts/QValueAxis"
 #include "MarketDepthDataMock.hpp"
 
-MarketDepthGraph::MarketDepthGraph(/*ViewModel* view_model*/){
+MarketDepthGraph::MarketDepthGraph(std::shared_ptr<ViewModel> view_model) : _view_model(view_model){
+    SetupUi();
+
+    connect(_view_model.get(), &ViewModel::StateChanged, this, &MarketDepthGraph::UpdateFromState);
+}
+
+void MarketDepthGraph::SetupUi(){
     auto graph_layout = new QHBoxLayout(this);
 
-    QBarSet *setBids = new QBarSet("Bids");
-    QBarSet *setAsks = new QBarSet("Asks");
-    QStringList categories;
+    _setBids = new QBarSet("Bids");
+    _setAsks = new QBarSet("Asks");
 
-    setBids -> setColor(QColor(51,255,51, 127));
-    setAsks -> setColor(QColor(255, 51, 51, 127));
-
-    // view_model -> HandleIntent(Intent::ReloadData);
-    //temporary data mock usage, just to test basic graph view
-    //later to include MVI abstraction and use that mock in its target place
-
-    auto temporary_market_depth = Mocks::UiMocks::GenerateMockSnapshot(100);
-
-    std::vector<int> bidVolumes;
-    std::vector<int> askVolumes;
-
-    unsigned int bidsTotalVolume = 0;
-    unsigned int asksTotalVolume = 0;
-
-    bidVolumes.reserve(temporary_market_depth.bids_price_level_volumes.size());
-    askVolumes.reserve(temporary_market_depth.asks_price_level_volumes.size());
-
-    for (auto const& [price, volume] : temporary_market_depth.bids_price_level_volumes) {
-        bidsTotalVolume += volume;
-        bidVolumes.push_back(bidsTotalVolume);
-    }
-
-    for (auto const& [price, volume] : temporary_market_depth.asks_price_level_volumes) {
-        asksTotalVolume += volume;
-        askVolumes.push_back(asksTotalVolume);
-    }
-
-    std::sort(bidVolumes.begin(), bidVolumes.end(), [](int a, int b){
-        return a > b;
-    });
-
-    for(size_t i = 0; i < bidVolumes.size(); ++i) {
-        *setBids << bidVolumes[i];
-        *setAsks << 0;
-        categories << QString("B%1").arg(i);
-    }
-
-    for(size_t i = 0; i < askVolumes.size(); ++i) {
-        *setBids << 0;
-        *setAsks << askVolumes[i];
-        categories << QString("A%1").arg(i);
-    }
+    _setBids -> setColor(QColor(51,255,51, 127));
+    _setAsks -> setColor(QColor(255, 51, 51, 127));
 
     auto series = new QStackedBarSeries(this);
-    series -> append(setBids);
-    series -> append(setAsks);
+    series -> append(_setBids);
+    series -> append(_setAsks);
 
     series->setBarWidth(1.0);
 
     auto chart = new QChart();
     chart -> addSeries(series);
+    QStringList categories;
 
-    chart->setAnimationOptions(QChart::SeriesAnimations);
+    _axisX = new QBarCategoryAxis();
+    _axisX->append(categories);
+    _axisX->setLabelsVisible(false);
+    chart->addAxis(_axisX, Qt::AlignBottom);
+    series->attachAxis(_axisX);
 
-    QBarCategoryAxis *axisX = new QBarCategoryAxis();
-    axisX->append(categories);
-    axisX->setLabelsVisible(false);
-    chart->addAxis(axisX, Qt::AlignBottom);
-    series->attachAxis(axisX);
-
-    QValueAxis *axisY = new QValueAxis();
-    chart->addAxis(axisY, Qt::AlignLeft);
-    series->attachAxis(axisY);
+    _axisY = new QValueAxis();
+    _axisY->setRange(0, 14000);
+    chart->addAxis(_axisY, Qt::AlignLeft);
+    series->attachAxis(_axisY);
 
     auto chart_view = new QChartView(chart);
-
     graph_layout -> addWidget(chart_view);
+
+}
+
+void MarketDepthGraph::UpdateFromState(std::shared_ptr<ViewState> state){
+
+    _setBids->remove(0, _setBids->count());
+    _setAsks->remove(0, _setAsks->count());
+    _axisX -> clear();
+
+    unsigned int bidsTotalVolume = 0;
+    unsigned int asksTotalVolume = 0;
+
+    _bidVolumes.clear();
+    _askVolumes.clear();
+
+    for (auto const& [price, volume] : state -> bids_price_level_volumes) {
+        bidsTotalVolume += volume;
+        _bidVolumes.push_back(bidsTotalVolume);
+    }
+
+    for (auto const& [price, volume] : state -> asks_price_level_volumes) {
+        asksTotalVolume += volume;
+        _askVolumes.push_back(asksTotalVolume);
+    }
+
+    std::sort(_bidVolumes.begin(), _bidVolumes.end(), [](int a, int b){
+        return a > b;
+    });
+
+    QStringList categories;
+
+    for(size_t i = 0; i < _bidVolumes.size(); ++i) {
+        *_setBids << _bidVolumes[i];
+        *_setAsks << 0;
+        categories << QString("B%1").arg(i);
+    }
+
+    for(size_t i = 0; i < _askVolumes.size(); ++i) {
+        *_setBids << 0;
+        *_setAsks << _askVolumes[i];
+        categories << QString("A%1").arg(i);
+    }
+
+    _axisX->append(categories);
 }
