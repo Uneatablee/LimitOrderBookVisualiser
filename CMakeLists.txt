@@ -27,6 +27,7 @@ add_subdirectory(src/lob_business_logic)
 add_subdirectory(src/console)
 #add_subdirectory(src/abides_generator)
 add_subdirectory(src/qt)
+add_subdirectory(src/infrastructure)
 add_subdirectory(tests)
 
 enable_testing()
