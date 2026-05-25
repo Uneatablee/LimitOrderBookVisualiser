@@ -30,4 +30,10 @@ namespace lobv::business_logic{
         _parent = price_level;
         return true;
     }
+
+    bool Order::SetQuantity(Quantity quantity){
+        if(quantity <= 0) return false;
+        _quantity = quantity;
+        return true;
+    }
 }

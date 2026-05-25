@@ -1,6 +1,7 @@
 #pragma once
 #include "Order.hpp"
 #include "PriceLevel.hpp"
+#include "Message.hpp"
 #include <vector>
 #include <unordered_map>
 #include <list>
@@ -16,8 +17,14 @@ namespace lobv::business_logic{
         OrderBook(){}
         bool AddOrder(OrderId id, OrderType type, Side side, Price price, Quantity quantity);
         bool CancelOrder(OrderId order_id);
-        std::shared_ptr<PriceLevel> GetOrCreatePriceLevel(Side side, Price price);
+        std::shared_ptr<PriceLevel> GetPriceLevel(Side side, Price price);
+        std::shared_ptr<PriceLevel> CreatePriceLevel(Side side, Price price);
         Quantity GetVolumeAtPrice(Side side, Price price);
+        bool CanMatch(Side side, Price price);
+        Trades MatchOrder(Side side, Price price, Quantity quantity);
+        Trades MatchPriceLevel(Price price, Quantity quantity, std::shared_ptr<PriceLevel> price_level);
+        Price GetLowestAsk();
+        Price GetHighestBid();
 
     private:
 
