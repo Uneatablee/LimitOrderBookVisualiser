@@ -1,6 +1,7 @@
 #pragma once
 #include <chrono>
 #include <memory>
+#include "Types.hpp"
 
 namespace lobv::business_logic{
 
@@ -11,14 +12,6 @@ namespace lobv::business_logic{
         GoodForDay
     };
 
-    enum class Side{
-        BuySide,
-        SellSide
-    };
-
-    using Price = int64_t;
-    using OrderId = uint64_t;
-    using Quantity = uint64_t;
     class PriceLevel;
 
     class Order{
@@ -35,6 +28,7 @@ namespace lobv::business_logic{
         Quantity GetQuantity() const;
         std::shared_ptr<PriceLevel> GetParent() const;
         bool SetParent(std::shared_ptr<PriceLevel>);
+        bool SetQuantity(Quantity quantity);
 
         std::weak_ptr<Order> _previous_order{};
         std::weak_ptr<Order> _next_order{};

@@ -4,7 +4,6 @@
 namespace lobv::business_logic{
 class PriceLevel{
     public:
-
         PriceLevel(Price price, Quantity quantity) : _price(price), _quantity(quantity){}
         Price _price;
         Quantity _quantity;
