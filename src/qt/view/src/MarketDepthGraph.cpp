@@ -95,4 +95,12 @@ void MarketDepthGraph::UpdateFromState(std::shared_ptr<ViewState> state){
     }
 
     _axisX->append(categories);
+
+    unsigned int max_volume = std::max(bidsTotalVolume, asksTotalVolume);
+
+    if(max_volume == 0) {
+        max_volume = 100;
+    }
+
+    _axisY->setRange(0, max_volume * 1.1);
 }

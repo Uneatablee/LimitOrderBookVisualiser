@@ -9,6 +9,8 @@
 #include <map>
 #include <memory>
 
+#include "MarketDepthDataMock.hpp"
+
 namespace lobv::business_logic{
 
     class OrderBook{
@@ -25,6 +27,9 @@ namespace lobv::business_logic{
         Trades MatchPriceLevel(Price price, Quantity quantity, std::shared_ptr<PriceLevel> price_level);
         Price GetLowestAsk();
         Price GetHighestBid();
+
+        //temporary solution
+        Mocks::UiMocks::OrderBookStateSnapshot GetSnapshot();
 
     private:
 

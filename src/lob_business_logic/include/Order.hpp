@@ -5,13 +5,6 @@
 
 namespace lobv::business_logic{
 
-    enum class OrderType{
-        GoodTilCancelled,
-        ImmediateOrCancel,
-        FillOrKill,
-        GoodForDay
-    };
-
     class PriceLevel;
 
     class Order{

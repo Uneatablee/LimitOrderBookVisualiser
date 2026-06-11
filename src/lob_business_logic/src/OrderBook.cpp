@@ -254,4 +254,22 @@ namespace lobv::business_logic{
 
         return trades;
     }
+
+    Mocks::UiMocks::OrderBookStateSnapshot OrderBook::GetSnapshot() {
+        Mocks::UiMocks::OrderBookStateSnapshot snap;
+
+        for(const auto& [price, level] : _asks) {
+            if(level->_quantity > 0) {
+                snap.asks_price_level_volumes[price] = level->_quantity;
+            }
+        }
+
+        for(const auto& [price, level] : _bids) {
+            if(level->_quantity > 0) {
+                snap.bids_price_level_volumes[price] = level->_quantity;
+            }
+        }
+
+        return snap;
+    }
 }
