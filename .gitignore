@@ -88,6 +88,10 @@ Thumbs.db
 *.swp
 *.log
 
+#abides
+/abides_generator/venv
+/abides_generator/abides_source
+
 #custom ignores
 #=================================
 build

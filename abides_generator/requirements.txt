@@ -1,0 +1,4 @@
+pyzmq>=25.1.0
+pandas
+numpy
+git+https://github.com/abides-sim/abides.git

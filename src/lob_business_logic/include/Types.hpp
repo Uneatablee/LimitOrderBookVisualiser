@@ -3,9 +3,16 @@
 
 namespace lobv::business_logic{
 
-    enum class Side{
+    enum class Side : uint8_t{
         BuySide,
         SellSide
+    };
+
+    enum class OrderType : uint8_t{
+        GoodTilCancelled,
+        ImmediateOrCancel,
+        FillOrKill,
+        GoodForDay
     };
 
     using Price = int64_t;

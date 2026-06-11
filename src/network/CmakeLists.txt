@@ -1,0 +1,17 @@
+project(reciever)
+
+file(GLOB_RECURSE SOURCE_FILES CONFIGURE_DEPENDS "*.cpp")
+add_library(reciever ${SOURCE_FILES})
+target_include_directories(reciever INTERFACE ./)
+
+#Dependencies
+find_package(ZeroMQ REQUIRED)
+find_package(cppzmq REQUIRED)
+find_package(Boost REQUIRED)
+
+target_link_libraries(reciever PUBLIC libzmq-static)
+target_link_libraries(reciever PUBLIC cppzmq)
+
+target_link_libraries(reciever PUBLIC lob_business_logic)
+
+target_include_directories(reciever PRIVATE ${Boost_INCLUDE_DIRS})

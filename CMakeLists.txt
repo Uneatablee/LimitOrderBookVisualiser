@@ -23,11 +23,24 @@ if(APPLE)
 endif()
 # --------------------------------
 
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+# Definiujemy ścieżki
+set(GENERATOR_DIR "${CMAKE_SOURCE_DIR}/abides_generator")
+set(VENV_DIR "${GENERATOR_DIR}/venv")
+
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} -m venv ${VENV_DIR}
+    COMMAND ${VENV_DIR}/bin/pip install -r ${GENERATOR_DIR}/requirements.txt
+    WORKING_DIRECTORY ${GENERATOR_DIR}
+)
+
 add_subdirectory(src/lob_business_logic)
 add_subdirectory(src/console)
 #add_subdirectory(src/abides_generator)
 add_subdirectory(src/qt)
 add_subdirectory(src/infrastructure)
+add_subdirectory(src/network)
 add_subdirectory(tests)
 
 enable_testing()
